@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.api.libreria.exceptions.ConflictException;
+import com.api.libreria.exceptions.NotFoundException;
 import com.api.libreria.services.LibroService;
 import com.api.libreria.services.PersonaService;
 import com.api.libreria.services.PrestamoService;
@@ -39,7 +41,7 @@ public class PrestamoVistaController {
         try {
             prestamoService.registrarPrestamo(isbn, personaId);
             atributos.addFlashAttribute("mensaje", "Préstamo registrado correctamente.");
-        } catch (IllegalArgumentException exception) {
+        } catch (IllegalArgumentException | NotFoundException | ConflictException exception) {
             atributos.addFlashAttribute("error", exception.getMessage());
         }
         return "redirect:/vista/prestamos";
@@ -51,7 +53,7 @@ public class PrestamoVistaController {
         try {
             prestamoService.devolverPrestamo(id);
             atributos.addFlashAttribute("mensaje", "Libro devuelto correctamente.");
-        } catch (IllegalArgumentException exception) {
+        } catch (IllegalArgumentException | NotFoundException exception) {
             atributos.addFlashAttribute("error", exception.getMessage());
         }
         return "redirect:/vista/prestamos";
@@ -63,7 +65,7 @@ public class PrestamoVistaController {
         try {
             prestamoService.actualizarPrestamo(id, isbn, personaId);
             atributos.addFlashAttribute("mensaje", "Préstamo actualizado correctamente.");
-        } catch (IllegalArgumentException exception) {
+        } catch (IllegalArgumentException | NotFoundException | ConflictException exception) {
             atributos.addFlashAttribute("error", exception.getMessage());
         }
         return "redirect:/vista/prestamos";
@@ -74,7 +76,7 @@ public class PrestamoVistaController {
         try {
             prestamoService.eliminarPrestamo(id);
             atributos.addFlashAttribute("mensaje", "Préstamo eliminado correctamente.");
-        } catch (IllegalArgumentException exception) {
+        } catch (IllegalArgumentException | NotFoundException exception) {
             atributos.addFlashAttribute("error", exception.getMessage());
         }
         return "redirect:/vista/prestamos";

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.api.libreria.exceptions.NotFoundException;
 import com.api.libreria.models.PersonaModel;
 import com.api.libreria.services.PersonaService;
 
@@ -42,7 +43,7 @@ public class PersonaVistaController {
         try {
             personaService.actualizarPersona(persona, id);
             atributos.addFlashAttribute("mensaje", "Usuario actualizado correctamente.");
-        } catch (IllegalArgumentException exception) {
+        } catch (IllegalArgumentException | NotFoundException exception) {
             atributos.addFlashAttribute("error", exception.getMessage());
         }
         return "redirect:/vista/personas";
