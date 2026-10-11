@@ -2,6 +2,7 @@ package com.api.libreria.controllers;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,6 +35,11 @@ public class PrestamoController {
         return prestamoService.obtenerPrestamosActivos();
     }
 
+    @PostMapping
+    public PrestamoModel registrarPrestamo(@RequestParam Long isbn, @RequestParam Long personaId) {
+        return prestamoService.registrarPrestamo(isbn, personaId);
+    }
+
     @PostMapping("/{id}/devolver")
     public PrestamoModel devolverPrestamo(@PathVariable Long id) {
         return prestamoService.devolverPrestamo(id);
@@ -46,7 +52,8 @@ public class PrestamoController {
     }
 
     @DeleteMapping("/{id}")
-    public void eliminarPrestamo(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminarPrestamo(@PathVariable Long id) {
         prestamoService.eliminarPrestamo(id);
+        return ResponseEntity.noContent().build();
     }
 }

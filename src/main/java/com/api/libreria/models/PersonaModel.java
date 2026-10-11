@@ -2,6 +2,8 @@ package com.api.libreria.models;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -18,6 +20,7 @@ public class PersonaModel {
 
     private String nombre;
     private String apellidos;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String contrasena;
     private Long telefono;
     private String correoElectronico;

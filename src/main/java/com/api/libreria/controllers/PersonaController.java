@@ -2,9 +2,9 @@ package com.api.libreria.controllers;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.api.libreria.exceptions.NotFoundException;
 import com.api.libreria.models.PersonaModel;
 import com.api.libreria.services.PersonaService;
 
@@ -35,8 +36,9 @@ public class PersonaController {
 	}
 
 	@GetMapping("/{id}")
-	public Optional<PersonaModel> obtenerPorId(@PathVariable("id") Long id) {
-		return personaService.obtenerPorId(id);
+	public PersonaModel obtenerPorId(@PathVariable("id") Long id) {
+		return personaService.obtenerPorId(id)
+				.orElseThrow(() -> new NotFoundException("No existe una persona con ID: " + id));
 	}
 
 	@PutMapping("/{id}")
@@ -45,13 +47,9 @@ public class PersonaController {
 	}
 
 	@DeleteMapping("/{id}")
-	public String eliminarPorId(@PathVariable("id") Long id) {
-		boolean ok = personaService.eliminarPersona(id);
-		if (ok) {
-			return "Se eliminó la persona con ID: " + id;
-		} else {
-			return "No pudo eliminar la persona con ID: " + id;
-		}
+	public ResponseEntity<Void> eliminarPorId(@PathVariable("id") Long id) {
+		personaService.eliminarPersonaPorId(id);
+		return ResponseEntity.noContent().build();
 	}
 
 	@GetMapping("/nombre/{nombre}")

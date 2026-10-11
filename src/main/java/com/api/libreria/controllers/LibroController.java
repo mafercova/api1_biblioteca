@@ -1,9 +1,9 @@
 package com.api.libreria.controllers;
 
 import java.util.ArrayList;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.api.libreria.exceptions.NotFoundException;
 import com.api.libreria.models.LibroModel;
 import com.api.libreria.services.LibroService;
 
@@ -34,8 +35,9 @@ public class LibroController {
     }
 
     @GetMapping("/{isbn}")
-    public Optional<LibroModel> obtenerPorId(@PathVariable("isbn") Long isbn) {
-        return this.libroService.obtenerPorId(isbn);
+    public LibroModel obtenerPorId(@PathVariable("isbn") Long isbn) {
+        return this.libroService.obtenerPorId(isbn)
+                .orElseThrow(() -> new NotFoundException("No existe un libro con ISBN: " + isbn));
     }
 
     @PutMapping(path = "/{isbn}")
@@ -44,13 +46,9 @@ public class LibroController {
     }
 
     @DeleteMapping(path = "/{isbn}")
-    public String eliminarPorId(@PathVariable("isbn") Long isbn) {
-        boolean ok = this.libroService.eliminarLibro(isbn);
-        if (ok) {
-            return "Se eliminó el libro con ISBN: " + isbn;
-        } else {
-            return "No pudo eliminar el libro con ISBN: " + isbn;
-        }
+    public ResponseEntity<Void> eliminarPorId(@PathVariable("isbn") Long isbn) {
+        this.libroService.eliminarLibroPorId(isbn);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping(path = "/autor/{autor}")

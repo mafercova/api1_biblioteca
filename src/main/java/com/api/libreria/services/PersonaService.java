@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.api.libreria.exceptions.NotFoundException;
 import com.api.libreria.models.PersonaModel;
 import com.api.libreria.repositories.IPersonaRepository;
 
@@ -39,7 +40,7 @@ public class PersonaService {
         }
         validarPersona(request, false);
         PersonaModel persona = personaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("No existe una persona con ID: " + id));
+                .orElseThrow(() -> new NotFoundException("No existe una persona con ID: " + id));
         persona.setNombre(request.getNombre());
         persona.setApellidos(request.getApellidos());
         if (request.getContrasena() != null && !request.getContrasena().isBlank()) {
@@ -79,10 +80,20 @@ public class PersonaService {
 
     public boolean eliminarPersona(Long id) {
         try {
-            personaRepository.deleteById(id);
+            eliminarPersonaPorId(id);
             return true;
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public void eliminarPersonaPorId(Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("Debe indicar la persona que desea eliminar.");
+        }
+        if (!personaRepository.existsById(id)) {
+            throw new NotFoundException("No existe una persona con ID: " + id);
+        }
+        personaRepository.deleteById(id);
     }
 }

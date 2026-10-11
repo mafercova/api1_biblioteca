@@ -6,6 +6,8 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.api.libreria.exceptions.ConflictException;
+import com.api.libreria.exceptions.NotFoundException;
 import com.api.libreria.models.LibroModel;
 import com.api.libreria.models.PersonaModel;
 import com.api.libreria.models.PrestamoModel;
@@ -41,23 +43,23 @@ public class PrestamoService {
             throw new IllegalArgumentException("Debe seleccionar un libro y un usuario.");
         }
         LibroModel libro = libroRepository.findById(isbn)
-                .orElseThrow(() -> new IllegalArgumentException("No existe el libro seleccionado."));
+                .orElseThrow(() -> new NotFoundException("No existe el libro seleccionado."));
         PersonaModel persona = personaRepository.findById(personaId)
-                .orElseThrow(() -> new IllegalArgumentException("No existe el usuario seleccionado."));
+                .orElseThrow(() -> new NotFoundException("No existe el usuario seleccionado."));
         if (!"Activo".equalsIgnoreCase(persona.getEstado())) {
-            throw new IllegalArgumentException("El usuario está inactivo.");
+            throw new ConflictException("El usuario está inactivo.");
         }
         if (!"Usuario".equalsIgnoreCase(persona.getRol()) && !"Admin".equalsIgnoreCase(persona.getRol())) {
             throw new IllegalArgumentException("El rol del usuario no es válido.");
         }
         if (prestamoRepository.findBySocioIdAndLibroIsbnAndFechaDevolucionIsNull(personaId, isbn).isPresent()) {
-            throw new IllegalArgumentException("El usuario ya tiene este libro prestado.");
+            throw new ConflictException("El usuario ya tiene este libro prestado.");
         }
         if (libro.getNumeroEjemplares() < 0) {
             throw new IllegalArgumentException("El número de ejemplares no puede ser negativo.");
         }
         if (libro.getNumeroEjemplares() <= 0) {
-            throw new IllegalArgumentException("El libro no tiene ejemplares disponibles.");
+            throw new ConflictException("El libro no tiene ejemplares disponibles.");
         }
         libro.setNumeroEjemplares(libro.getNumeroEjemplares() - 1);
         libroRepository.save(libro);
@@ -74,7 +76,7 @@ public class PrestamoService {
             throw new IllegalArgumentException("Debe indicar el préstamo que desea devolver.");
         }
         PrestamoModel prestamo = prestamoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("No existe el préstamo seleccionado."));
+                .orElseThrow(() -> new NotFoundException("No existe el préstamo seleccionado."));
         if (prestamo.getFechaDevolucion() == null) {
             prestamo.setFechaDevolucion(LocalDateTime.now());
             LibroModel libro = prestamo.getLibro();
@@ -90,26 +92,26 @@ public class PrestamoService {
             throw new IllegalArgumentException("Debe indicar el préstamo, libro y usuario.");
         }
         PrestamoModel prestamo = prestamoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("No existe el préstamo seleccionado."));
+                .orElseThrow(() -> new NotFoundException("No existe el préstamo seleccionado."));
         if (prestamo.getFechaDevolucion() != null) {
-            throw new IllegalArgumentException("No se puede editar un préstamo devuelto.");
+            throw new ConflictException("No se puede editar un préstamo devuelto.");
         }
 
         LibroModel nuevoLibro = libroRepository.findById(isbn)
-                .orElseThrow(() -> new IllegalArgumentException("No existe el libro seleccionado."));
+                .orElseThrow(() -> new NotFoundException("No existe el libro seleccionado."));
         PersonaModel nuevaPersona = personaRepository.findById(personaId)
-                .orElseThrow(() -> new IllegalArgumentException("No existe el usuario seleccionado."));
+                .orElseThrow(() -> new NotFoundException("No existe el usuario seleccionado."));
         validarUsuario(nuevaPersona);
 
         if (prestamoRepository.findBySocioIdAndLibroIsbnAndFechaDevolucionIsNull(personaId, isbn)
                 .filter(otroPrestamo -> !otroPrestamo.getId().equals(id)).isPresent()) {
-            throw new IllegalArgumentException("El usuario ya tiene este libro prestado.");
+            throw new ConflictException("El usuario ya tiene este libro prestado.");
         }
 
         LibroModel libroAnterior = prestamo.getLibro();
         if (!libroAnterior.getIsbn().equals(nuevoLibro.getIsbn())) {
             if (nuevoLibro.getNumeroEjemplares() <= 0) {
-                throw new IllegalArgumentException("El nuevo libro no tiene ejemplares disponibles.");
+                throw new ConflictException("El nuevo libro no tiene ejemplares disponibles.");
             }
             libroAnterior.setNumeroEjemplares(libroAnterior.getNumeroEjemplares() + 1);
             nuevoLibro.setNumeroEjemplares(nuevoLibro.getNumeroEjemplares() - 1);
@@ -127,7 +129,7 @@ public class PrestamoService {
             throw new IllegalArgumentException("Debe indicar el préstamo que desea eliminar.");
         }
         PrestamoModel prestamo = prestamoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("No existe el préstamo seleccionado."));
+                .orElseThrow(() -> new NotFoundException("No existe el préstamo seleccionado."));
         if (prestamo.getFechaDevolucion() == null) {
             LibroModel libro = prestamo.getLibro();
             libro.setNumeroEjemplares(libro.getNumeroEjemplares() + 1);
@@ -138,7 +140,7 @@ public class PrestamoService {
 
     private void validarUsuario(PersonaModel persona) {
         if (!"Activo".equalsIgnoreCase(persona.getEstado())) {
-            throw new IllegalArgumentException("El usuario está inactivo.");
+            throw new ConflictException("El usuario está inactivo.");
         }
         if (!"Usuario".equalsIgnoreCase(persona.getRol()) && !"Admin".equalsIgnoreCase(persona.getRol())) {
             throw new IllegalArgumentException("El rol del usuario no es válido.");
