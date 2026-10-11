@@ -154,6 +154,8 @@ api1_biblioteca/
 - `PUT /prestamos/{id}?isbn={isbn}&personaId={personaId}` — Actualiza un préstamo.
 - `DELETE /prestamos/{id}` — Elimina un préstamo.
 
+> La creación de préstamos se realiza actualmente desde la interfaz web en `/vista/prestamos`, mediante el formulario de registro.
+
 ### Vistas web
 
 - `GET /vista/libros`
@@ -249,13 +251,46 @@ Respuesta esperada:
 }
 ```
 
-### 4) Registrar un préstamo
+### 4) Consultar préstamos activos
 
 ```bash
-curl -X POST "http://localhost:1500/prestamos/1/devolver"
+curl http://localhost:1500/prestamos/activos
 ```
 
-> La lógica de préstamo se gestiona desde la vista web o desde la capa de servicio, validando que el usuario esté activo y que exista disponibilidad del libro.
+Respuesta esperada:
+
+```json
+[
+  {
+    "id": 1,
+    "libro": {
+      "isbn": 1,
+      "titulo": "Clean Code",
+      "autor": "Robert C. Martin",
+      "editorial": "Pearson",
+      "añoPublicacion": "2008",
+      "numeroEjemplares": 4
+    },
+    "socio": {
+      "id": 1,
+      "nombre": "Ana",
+      "apellidos": "García",
+      "estado": "Activo",
+      "rol": "Usuario"
+    },
+    "fechaPrestamo": "2026-10-11T10:30:00",
+    "fechaDevolucion": null
+  }
+]
+```
+
+### 5) Devolver un préstamo
+
+```bash
+curl -X POST http://localhost:1500/prestamos/1/devolver
+```
+
+La devolución registra la fecha de devolución y vuelve a incrementar el número de ejemplares disponibles del libro.
 
 ## Consideraciones importantes
 
